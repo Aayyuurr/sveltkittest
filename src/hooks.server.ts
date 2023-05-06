@@ -15,16 +15,42 @@ const handleDetectLocale = (async ({ event, resolve }) => {
 }) satisfies Handle;
 
 
+//google auth
 
+import { prisma } from '$lib/db.server';
 import { SvelteKitAuth } from "@auth/sveltekit";
 import Google from "@auth/core/providers/google";
 import { GOOGLe_ID, GOOGLE_SECRET } from "$env/static/private";
-
-
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 const handleAuth = SvelteKitAuth({
 	//eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	//@ts-ignore
-  providers: [Google({ clientId: GOOGLe_ID, clientSecret: GOOGLE_SECRET })],
+	adapter: PrismaAdapter(prisma),
+	//eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	//@ts-ignore
+	providers: [Google({ clientId: GOOGLe_ID, clientSecret: GOOGLE_SECRET })],
 });
 
-export const handle = sequence(handleDetectLocale, handleAuth);
+
+
+
+//midelware for auth
+
+import { redirect } from "@sveltejs/kit";
+
+async function HandleProtection  ({ event, resolve }) {
+	if (event.route.id?.includes('(protected)')) {
+		const session = await event.locals.getSession();
+		if (!session) {
+		  throw redirect(303, "/");
+		}
+	  }
+	
+	  // If the request is still here, just proceed as normally
+	  return resolve(event);
+};
+
+
+
+
+export const handle = sequence(handleDetectLocale, handleAuth, HandleProtection);

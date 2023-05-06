@@ -4,5 +4,5 @@ export const load = async (event) => {
 	const { locale } = event.data;
 	await loadLocaleAsync(locale);
 
-	return event.data as App.Locals;
+	return event.data;
 };

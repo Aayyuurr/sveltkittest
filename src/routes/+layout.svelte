@@ -10,5 +10,5 @@
 	export let data;
 	setLocale(data.locale);
 </script>
-
+<h2>layout1</h2>
 <slot />
